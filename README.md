@@ -41,4 +41,4 @@ Grafana veri kaynaklarını aşağıdaki dizinlerde tutar:
  https://grafana.com/docs/grafana/latest/datasources/loki/#provision-the-data-source
 
 #### JAEGER
- https://grafana.com/docs/grafana/latest/datasources/loki/#loki-data-source
+ https://grafana.com/docs/grafana/latest/datasources/loki/#loki-data-source# jenkins-loki-grafana-OpenTelemetry
