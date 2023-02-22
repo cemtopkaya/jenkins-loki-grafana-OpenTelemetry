@@ -1,0 +1,34 @@
+apiVersion: 1
+
+# GRAFITI
+# https://grafana.com/docs/grafana/latest/administration/provisioning/#example-data-source-config-file
+
+# LOKI
+# https://grafana.com/docs/grafana/latest/datasources/loki/#provision-the-data-source
+
+# JAEGER
+# https://grafana.com/docs/grafana/latest/datasources/loki/#loki-data-source
+
+datasources:
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://host.docker.internal:3100/
+    jsonData:
+      maxLines: 1000
+
+#  - name: prometheus-slave
+#    type: prometheus
+#    access: proxy
+#    orgId: 1
+#    url: http://prometheus-slave:9090
+#    isDefault:
+#    version: 1
+#    editable: true
+
+#  - name: Jaeger
+#    type: jaeger
+#    url: http://jaeger-tracing-query:16686/
+#    access: proxy
+#    # UID should match the datasourceUid in derivedFields.
+#    uid: my_jaeger_uid

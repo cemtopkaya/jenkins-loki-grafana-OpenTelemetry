@@ -1,0 +1,31 @@
+receivers:
+  filelog:
+    # include: [/var/log/*.log]
+    # include: [/var/log/messages, /var/log/syslog, /var/log/user.log]
+    # include: [/var/log/messages, /var/log/syslog, /var/log/*.log]
+    # /log_folder içindeki alt dizinlerde bulunan log isimli dosyaları izle
+    include: [/log_folder/**/log]
+
+processors:
+ attributes:
+   actions:
+     - action: insert
+       key: jenkins_build_logs
+       # Attributes Processor: https://bit.ly/3lVAcZJ
+       from_attribute: log.file.name
+     - action: insert
+       key: loki.attribute.labels
+       value: jenkins_build_logs
+
+exporters:
+  loki:
+    endpoint: "http://host.docker.internal:3100/loki/api/v1/push"
+  logging:
+    # logLevel: info
+
+service:
+  pipelines:
+    logs:
+      receivers: [filelog]
+      processors: [attributes]
+      exporters: [logging, loki]

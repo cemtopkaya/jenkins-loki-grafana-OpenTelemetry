@@ -1,0 +1,73 @@
+version: "3.8"
+
+networks:
+  loki:
+
+services:
+
+# http://host.docker.internal:3100/loki/api/v1/push adresine gönderilen 
+# günlükleri  LOKI toplayacak
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - loki
+
+# http://localhost:3000 Adresinde toplanan günlükleri GRAFANA görüntüleyecek
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - "GF_AUTH_DISABLE_LOGIN_FORM=true"
+      - "GF_AUTH_ANONYMOUS_ENABLED=true"
+      - "GF_AUTH_ANONYMOUS_ORG_ROLE=Admin"
+      - "GF_DEFAULT_INSTANCE_NAME=my-grafana"
+      # Kullanıcı girişi olsun istersek
+      # Configure Grafana with Docker Secrets: https://bit.ly/3Ew1H2f
+      #- "GF_SECURITY_ADMIN_USER=demo"
+      #- "GF_SECURITY_ADMIN_PASSWORD=demo"
+      #- "GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/admin_password"
+      - "GF_USERS_DEFAULT_THEME=dark"
+      - "GF_LIVE_MAX_CONNECTIONS=0"
+    volumes:
+      - ./volume/grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./volume/grafana/data:/var/lib/grafana
+      - ./volume/grafana/log:/var/log/grafana
+      - ./volume/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+
+    ports:
+      - "3000:3000"
+    networks:
+      - loki
+
+
+# Sidecar olarak çalışacak opentelemetry uygulaması 
+# ancak jenkins konteyneri içinde de çalıştırılabilir
+# Bunu https://ahmet.im/blog/minimal-init-process-for-containers/ adresindeki
+# yöntemleri kullanarak aynı anda jenkins ve otelcol'u çalıştırabilirsiniz.
+  otelcol:
+    build:
+      context: ./contexts/otelcol
+    image: otelcol
+    container_name: otelcol
+    command: otelcol-contrib --config /config.yaml
+    volumes:
+      - ./volume/jenkins/home/jobs:/log_folder
+      - ./volume/otelcol/config.yaml:/config.yaml
+
+# %JENKINS_HOME%\jobs Dizinindeki görevlerin her koşu sonrasında "log" dosyası oluşur
+# Bu log dosyalarını takip ederek LOKI'ye gönderecek ve GRAFANA'dan görüntüleyeceğiz.
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true
+    user: root
+    ports:
+     - 8080:8080
+     - 50000:50000
+    container_name: jenkins
+    volumes:
+      - ./volume/jenkins/home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
