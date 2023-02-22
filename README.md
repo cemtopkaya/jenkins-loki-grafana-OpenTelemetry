@@ -10,6 +10,9 @@ Bu iş için:
 
 
 ## Grafana'da Loki Kaynağındaki Günlük Kayıtlarını Sorgulamak
+OpenTelemetry konteynerine bağlanmış olan `/log_folder` dizini Jenkins konteynerindeki `./volume/jenkins/home/jobs` dizinine işaret ediyor:
+
+![](.vscode/readme-images/2023-02-22-08-10-31.png)
 
 OpenTelemetry'nin ayarlarında jenkins_build_logs olarak tanımlandığı için kayıtları bu etiket içinde göreceğiz:
 

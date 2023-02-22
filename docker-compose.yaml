@@ -44,20 +44,6 @@ services:
       - loki
 
 
-# Sidecar olarak çalışacak opentelemetry uygulaması 
-# ancak jenkins konteyneri içinde de çalıştırılabilir
-# Bunu https://ahmet.im/blog/minimal-init-process-for-containers/ adresindeki
-# yöntemleri kullanarak aynı anda jenkins ve otelcol'u çalıştırabilirsiniz.
-  otelcol:
-    build:
-      context: ./contexts/otelcol
-    image: otelcol
-    container_name: otelcol
-    command: otelcol-contrib --config /config.yaml
-    volumes:
-      - ./volume/jenkins/home/jobs:/log_folder
-      - ./volume/otelcol/config.yaml:/config.yaml
-
 # %JENKINS_HOME%\jobs Dizinindeki görevlerin her koşu sonrasında "log" dosyası oluşur
 # Bu log dosyalarını takip ederek LOKI'ye gönderecek ve GRAFANA'dan görüntüleyeceğiz.
   jenkins:
@@ -71,3 +57,19 @@ services:
     volumes:
       - ./volume/jenkins/home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
+
+# Sidecar olarak çalışacak opentelemetry uygulaması 
+# ancak jenkins konteyneri içinde de çalıştırılabilir
+# Bunu https://ahmet.im/blog/minimal-init-process-for-containers/ adresindeki
+# yöntemleri kullanarak aynı anda jenkins ve otelcol'u çalıştırabilirsiniz.
+  otelcol:
+    build:
+      context: ./contexts/otelcol
+    image: otelcol
+    container_name: otelcol
+    command: otelcol-contrib --config /config.yaml
+    volumes:
+      - ./volume/jenkins/home/jobs:/log_folder
+      - ./volume/otelcol/config.yaml:/config.yaml
+    depends_on:
+      - jenkins
